@@ -1,7 +1,6 @@
-```python
-from pathlib import Path, Dict
-from typing import Any
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from pathlib import Path
+from typing import Any, Dict
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 import os
 
 class ReadFileTool(ToolInterface):
@@ -53,65 +52,41 @@ class ReadFileTool(ToolInterface):
                 tool_name="read_file",
                 args=args,
                 stdout="",
-                stderr="File does not exist",
+                stderr=f"File '{file_path}' does not exist",
                 return_code=1,
             )
-``````python
-if not file_path.startswith("/"):
-    file_path = os.path.join(self._root_path, file_path)
-    
-if not str(file_path).startswith(str(self._root_path)):
-    return ToolExecutionResult(
-        tool_name="read_file",
-        args=args,
-        stdout="",
-        stderr="Access denied: outside allowed directory",
-        return_code=1,
-    )
 
-file_path = Path(file_path)
+        if not file_path.is_file():
+            return ToolExecutionResult(
+                tool_name="read_file",
+                args=args,
+                stdout="",
+                stderr="Path is not a file",
+                return_code=1,
+            )
 
-if not file_path.exists():
-    return ToolExecutionResult(
-        tool_name="read_file",
-        args=args,
-        stdout="",
-        stderr="File does not exist",
-        return_code=1,
-    )
+        try:
+            contents = file_path.read_text(encoding="utf-8", errors="replace")
+            return ToolExecutionResult(
+                tool_name="read_file",
+                args=args,
+                stdout=contents,
+                stderr="",
+                return_code=0,
+            )
 
-if not file_path.is_file():
-    return ToolExecutionResult(
-        tool_name="read_file",
-        args=args,
-        stdout="",
-        stderr="Path is not a file",
-        return_code=1,
-    )
-
-try:
-    contents = file_path.read_text(encoding="utf-8", errors="replace")
-    return ToolExecutionResult(
-        tool_name="read_file",
-        args=args,
-        stdout=contents,
-        stderr="",
-        return_code=0,
-    )
-
-except Exception as e:
-    return ToolExecutionResult(
-        tool_name="read_file",
-        args=args,
-        stdout="",
-        stderr=str(e),
-        return_code=1,
-    )
+        except Exception as e:
+            return ToolExecutionResult(
+                tool_name="read_file",
+                args=args,
+                stdout="",
+                stderr=str(e),
+                return_code=1,
+            )
 
 if __name__ == "__main__":
-    pwd = "/Users/matthew.flood/workspace/airflow-datawarehouse"
+    pwd = "/Users/matthewflood/workspace/siiv/"
     tool = ReadFileTool(pwd=pwd)
-    results = tool.execute(file_path=f"{pwd}/README.md")
+    results = tool.execute(file_path=f"photo_to_code/photo_to_code_batch.py")
     content = results.to_llm_message()
     print(content)
-```
