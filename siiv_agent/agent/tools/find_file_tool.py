@@ -1,7 +1,8 @@
 import os
 from typing import Any, Dict, List
-from toolbox_interface import ToolInterface, ToolExecutionResult
-import logging
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+import logging  
+from pathlib import Path
 
 LOGGER_NAME = __name__
 
@@ -53,15 +54,14 @@ class FindFileTool(ToolInterface):
                         "type": "string",
                         "description": "The path of the directory to search in (relative to self._root_path)",
                     },
-
                     "recursive": {
-
-    "recursive": {
-        "type": "boolean",
-        "description": "Whether to search subdirectories recursively. Defaults to false.",
-        "default": False,
-    },
-    "required": ["filename", "directory"],
+                    "type": "boolean",
+                    "description": "Whether to search subdirectories recursively. Defaults to false.",
+                    "default": False,
+                },
+                "required": ["filename", "directory"],
+            },
+        },
     }
 
     def execute(self, **kwargs) -> ToolExecutionResult:
@@ -97,21 +97,18 @@ class FindFileTool(ToolInterface):
             )
 
         try:
+            
             self._logger.info("globbing path %s (recursive=%s):", path_object, recursive)
             candidates = path_object.rglob("*") if recursive else path_object.glob("*")
-            matches = [
-                glob_file_object
-                for glob_file_object in candidates
-                if filename.lower() in glob_file_object.name.lower()
-            ]
+
+            matches = []
             num_candidates = 0
             for glob_file_object in candidates:
+                num_candidates += 1
                 if filename.lower() in glob_file_object.name.lower():
                     full_path_as_string = str(glob_file_object)
 
                     self._logger.info("name matches '%s': %s", filename.lower(), full_path_as_string)
-
-                    self._logger.info("name matches '%s': %s", filename_lower, full_path_as_string)
 
                     if _should_ignore_file(full_path_as_string):
                         self._logger.info("ignoring '%s'", full_path_as_string)
@@ -122,7 +119,8 @@ class FindFileTool(ToolInterface):
                         full_path_as_string += '/'
                     matches.append(full_path_as_string)
 
-            self._logger.info("%d of %d objects matched '%s'", len(matches), num_candidates, filename_lower)
+            self._logger.info("%d of %d objects matched '%s'", len(matches), num_candidates, filename.lower())
+
             return ToolExecutionResult(
                 tool_name="find_file",
                 args=args,
@@ -132,7 +130,7 @@ class FindFileTool(ToolInterface):
             )
 
         except Exception as e:
-            logger.error("Unknown exception in find_files '%s': %s", e, type(e))
+            self._logger.error("Unknown exception in find_files '%s': %s", e, type(e))
             return ToolExecutionResult(
                 tool_name="find_file",
                 args=args,
@@ -143,13 +141,15 @@ class FindFileTool(ToolInterface):
 
 if __name__ == "__main__":
 
-    import my_logging
+    import agent.my_logging
 
-    pwd = '/Users/matthew.flood/workspace/airflow-datawarehouse'
+    pwd = "/Users/matthewflood/workspace/siiv/photo_to_code"
     tool = FindFileTool(pwd=pwd)
-    results = tool.execute(filename="ecs_file_exceeded_loss_dag", directory=f"{pwd}/", recursive=True)
-    results = tool.execute(filename="validation.py", directory=f"dags", recursive=True)
-    content = results.to_cli_message()
+    results = tool.execute(
+            filename="photo_to_code_batch.py", 
+            directory=pwd, 
+            recursive=False)
+    content = results.to_llm_message()
     print(content)
 
 # end
