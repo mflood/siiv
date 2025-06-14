@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+import re
 
 class SearchFilesTool(ToolInterface):
     def __init__(self, root_path: str):
@@ -15,7 +16,7 @@ class SearchFilesTool(ToolInterface):
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "The path of the directory to search in (relative to the current working directory (self._root_path)). This directory will be recursively searched.",
+                        "description": f"The path of the directory to search in (relative to the current working directory ({self._root_path})). This directory will be recursively searched.",
                     },
                     "regex": {
                         "type": "string",
@@ -44,15 +45,23 @@ class SearchFilesTool(ToolInterface):
             target_dir = (
                 Path(path) if Path(path).is_absolute() else self._root_path / path
             ).resolve()
+
             if not str(target_dir).startswith(str(self._root_path)):
                 return ToolExecutionResult(
-                    "search_files", args, 1,
-                    "Access denied: outside allowed directory."
+                    tool_name="search_files",
+                    args=args,
+                    stdout="",
+                    stderr="Access denied: outside allowed directory.",
+                    return_code=1,
                 )
 
             if not target_dir.is_dir():
                 return ToolExecutionResult(
-                    "search_files", args, 1, "Provided path is not a directory."
+                    tool_name="search_files",
+                    args=args,
+                    stdout="",
+                    stderr="Provided path is not a directory.",
+                    return_code=1,
                 )
 
             compiled = re.compile(regex)
@@ -60,6 +69,7 @@ class SearchFilesTool(ToolInterface):
             matched_files = list(target_dir.rglob(file_pattern))
 
             for file_path in matched_files:
+
                 if not file_path.is_file():
                     continue
 
@@ -67,10 +77,11 @@ class SearchFilesTool(ToolInterface):
                     lines = file_path.read_text(
                         encoding="utf-8", errors="ignore"
                     ).splitlines()
+
                     for idx, line in enumerate(lines):
                         compiled_search = compiled.search(line)
                         if compiled_search:
-                            line_max = ' '.join(
+                            context = '\n'.join(
                                 lines[max(idx - 2, 0): min(len(lines), idx + 3)]
                             )
                             result_lines.append(
@@ -82,17 +93,29 @@ class SearchFilesTool(ToolInterface):
 
             if not result_lines:
                 return ToolExecutionResult(
-                    "search_files", args, 0, "No matches found."
+                    tool_name="search_files",
+                    args=args,
+                    stdout="",
+                    stderr="No matches found.",
+                    return_code=0,
                 )
 
-            return ToolExecutionResult("search_files", args, "\n".join(result_lines), 1)
+            return ToolExecutionResult(
+                tool_name="search_files",
+                args=args,
+                stdout="\n".join(result_lines),
+                stderr="",
+                return_code=0,
+            )
 
-            except Exception as ex:
-                return ToolExecutionResult("search_files", args, str(ex), 1)
+        except Exception as ex:
+            return ToolExecutionResult(tool_name="search_files", args=args, stdout=str(ex), stderr="", return_code=1)
 
 if __name__ == "__main__":
-    root = "/Users/mathew.flood/workspace/airflom-datawarehouse/"
-    tool = SearchFilesTool(root=root)
-    result = tool.execute(args=["regex", "def main", "file_pattern=*.py"])
-    content = result.to_lambda_message()
+    root = "/Users/matthewflood/workspace/siiv/photo_to_code"
+    tool = SearchFilesTool(root_path=root)
+    result = tool._execute(path=".", regex="parse_args", file_pattern="*.py")
+    print(result)
+
+    content = result.to_llm_message()
     print(content)
