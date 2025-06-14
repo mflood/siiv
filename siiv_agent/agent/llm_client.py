@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, List, Optional
-
+import logging
 import json
 import requests
 
-from tools.tool_manager import ToolManager
+# from agent.tools.tool_manager import ToolManager
+
+
+LOGGER_NAME = __name__
+
 
 LM_STUDIO_URL = "http://localhost:1234/v1/chat/completions"
 LM_MODEL = "gemma-2-9b-tf"
@@ -14,6 +18,7 @@ LM_MODEL = "openhermes-2-5-mistral-7b"
 LM_MODEL = "mistral-7b-instruct-v0.2"
 LM_MODEL = "gemma-2-9b-pl"
 LM_MODEL = "deepset/deepset-k1-6528-qwen3-8b"
+LM_MODEL = "google/gemma-3-12b"
 LM_API_KEY = "whatever"
 
 @dataclass
@@ -26,8 +31,8 @@ class LLMClient:
         self._model = LM_MODEL
         self._url = LM_STUDIO_URL
         self._api_key = LM_API_KEY
+        self._logger = logging.getLogger(LOGGER_NAME)
 
-    def call_chat(self, messages: List[dict], tool_schema=dict, temperature=0.3, max_tokens=8192):
     def call_chat(self, messages: List[dict], tool_schema=dict, temperature=0.8, max_tokens=8192) :
         headers = {}
         if self._api_key:
@@ -39,7 +44,7 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
             "n": 1,
-            "tools": tool_schema,
+            "tools": [],
             "tool_choice": "auto",
         } 
 
@@ -54,7 +59,8 @@ class LLMClient:
         response = requests.post(self._url, headers=headers,json=payload)
 
         if response.status_code != 200:
-            raise Exception(f"LLM call failed: (response.status_code) (response.text) ")
+            self._logger.error("LLM call failed: %s %s" , response.status_code, response.text)
+            raise Exception(f"LLM call failed: {response.status_code} {response.text}")
 
         data = response.json()
 
@@ -72,13 +78,15 @@ class LLMClient:
 
 if __name__ == "__main__":
 
+    import agent.my_logging
+
     messages = [
         {"role": "system", "content": "You are a cheerful and helpful agent. Provide answers as complete sentences and include fun emojis. Don't use a tool if you already know the answer. The only tool available is onnect_to_file. Do not use that tool unless instructed to."},
-        {"role": "user", "content": "Can you explain what ReAct is when creating AI agents?"},
+        {"role": "user", "content": "What is the wisest thing anyone has ever said?"}
     ]
 
     client = LLMClient()
 
     response = client.call_chat(messages=messages, tool_schema={})
 
-    print(response.content)
+    print(response)
