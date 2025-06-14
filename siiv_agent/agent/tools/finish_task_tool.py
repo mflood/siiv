@@ -1,6 +1,5 @@
-```python
 from typing import Any, Dict
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
 class TaskCompleteError(Exception):
     """Raised when the agent has completed its task and is ready to return the final message to the user."""
@@ -32,4 +31,14 @@ class FinishTaskTool(ToolInterface):
     def execute(self, **kwargs) -> ToolExecutionResult:
         message = kwargs["message"]
         raise TaskCompleteError(message)
-```
+
+if __name__ == "__main__":
+    import agent.my_logging
+
+    tool = FinishTaskTool()
+    try:
+        result = tool.execute(message="I have finished the task")
+    except TaskCompleteError as e:
+        print(e.message)
+
+# end
