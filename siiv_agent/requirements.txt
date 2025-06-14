@@ -3,3 +3,5 @@ python-dotenv
 black
 mypy
 isort
+demjson3
+requests
