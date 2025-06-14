@@ -1,7 +1,8 @@
 import ast
 from pathlib import Path
+import os
 from typing import Any, Dict, List
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
 def extract_definitions(file_path: Path) -> List[str]:
     try:
@@ -22,7 +23,8 @@ def extract_definitions(file_path: Path) -> List[str]:
 
 class ListCodeDefinitionNamesTool(ToolInterface):
     def __init__(self, pwd: str):
-        self.__root_path = Path(pwd)
+
+        self._root_path = pwd
 
     def get_schema(self) -> Dict[str, Any]:
         return {
@@ -51,22 +53,25 @@ class ListCodeDefinitionNamesTool(ToolInterface):
         return self._execute(path=kwargs["path"])
 
     def _execute(self, path: str) -> ToolExecutionResult:
-        args = ("path": path)
+        args = {"path": path}
 
         try:
-            full_path = (self._root_path / path).resolve()
-            if not str(full_path).startswith(str(self._root_path)):
+            if not path.startswith("/"):
+                path = os.path.join(self._root_path, path)
+
+            if not str(path).startswith(str(self._root_path)):
                 return ToolExecutionResult(
                     "list_code_definition_names", args, "", "Access denied", 1
                 )
 
-            if not full_path.exists() or not full_path.is_dir():
+            path_object = Path(path)
+            if not path_object.exists() or not path_object.is_dir():
                 return ToolExecutionResult(
                     "list_code_definition_names", args, "", "Not a directory", 1
                 )
 
             results = []
-            for file in full_path.glob("*.py"):
+            for file in path_object.glob("*.py"):
                 definitions = extract_definitions(file)
                 if definitions:
                     results.append(f"{file.name}:\n" + "\n".join(definitions))
@@ -82,8 +87,8 @@ class ListCodeDefinitionNamesTool(ToolInterface):
 
 if __name__ == "__main__":
     # Change this path as needed for local testing
-    pwd = "/Users/matthew.flood/workspace/airflow-datawarehouse"
+    pwd = "/Users/matthewflood/workspace/siiv/photo_to_code"
     tool = ListCodeDefinitionNamesTool(pwd=pwd)
-    results = tool.execute(path="dags/lib/digital_economy") # relative to `pwd`
+    results = tool.execute(path="") # relative to `pwd`
     content = results.to_llm_message()
     print(content)
