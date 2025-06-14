@@ -41,7 +41,8 @@ class FindFileTool(ToolInterface):
     def get_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
-            "function": "find_file",
+            "function": {
+            "name": "find_file",
             "description": "Search for files matching a given filename or pattern within a directory. Matches are case-insensitive and partial (i.e. substring).",
             "parameters": {
                 "type": "object",
@@ -61,6 +62,7 @@ class FindFileTool(ToolInterface):
                 },
                 "required": ["filename", "directory"],
             },
+        },
         },
     }
 

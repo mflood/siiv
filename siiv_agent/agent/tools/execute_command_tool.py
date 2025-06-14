@@ -1,6 +1,6 @@
 import subprocess
 from typing import Any, Dict, List
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
 
 class ExecuteCommandTool(ToolInterface):
