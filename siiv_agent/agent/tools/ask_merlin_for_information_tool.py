@@ -1,5 +1,6 @@
 from typing import Any, Dict
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+import sys
 
 class AskMerlinForInformationTool(ToolInterface):
     def __init__(self, pwd: str):
@@ -30,26 +31,27 @@ class AskMerlinForInformationTool(ToolInterface):
     def _execute(self, prompt: str) -> ToolExecutionResult:
         args = {"prompt": prompt}
 
-        print("\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
-        user_input = sys.stdin.read()
-        return ToolExecutionResult(
-            tool_name="ask_human_for_information",
-            args=args,
-            stdout=user_input.strip(),
-            stderr="",
-            return_code=0,
-        )
+        try:
+            print("\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+            user_input = sys.stdin.read()
+            return ToolExecutionResult(
+                tool_name="ask_human_for_information",
+                args=args,
+                stdout=user_input.strip(),
+                stderr="",
+                return_code=0,
+            )
 
-    except Exception as e:
-        return ToolExecutionResult(
-            tool_name="ask_human_for_information",
-            args=args,
-            stdout="",
-            stderr=str(e),
-            return_code=1,
-        )
+        except Exception as e:
+            return ToolExecutionResult(
+                tool_name="ask_human_for_information",
+                args=args,
+                stdout="",
+                stderr=str(e),
+                return_code=1,
+            )
 
 if __name__ == "__main__":
     tool = AskMerlinForInformationTool(pwd=".")
     result = tool.execute(prompt="What should the description of this tool be?")
-    print(result.to_line_message())
+    print(result.to_llm_message())
