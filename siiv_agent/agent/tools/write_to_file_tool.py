@@ -1,6 +1,7 @@
 from pathlib import Path
+import os
 from typing import Any, Dict
-from tool_core.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
 class WriteToFileTool(ToolInterface):
 
@@ -38,7 +39,7 @@ class WriteToFileTool(ToolInterface):
         args = {"file_path": file_path, "content": f"({len(content)} characters)"}
 
         try:
-            if not file_path.startswith(("/", ".")):
+            if not str(file_path).startswith(("/", ".")):
                 file_path = os.path.join(self._root_path, file_path)
 
             path = Path(file_path).resolve()
@@ -72,10 +73,13 @@ class WriteToFileTool(ToolInterface):
                 return_code=1,
             )
 if __name__ == "__main__":
-    # root = "/users/matthew.flood/workspace/airflow-datawarehouse"
+
     pwd = Path.cwd()
+    tool = WriteToFileTool(root_path=str(pwd))
     result = tool._execute(
-        pwd / "tmp/test_output.txt", "Hello from the write_to_file tool!"
+        str(pwd / "tmp/test_output.txt"), "Hello from the write_to_file tool!"
     )
-    for msg in result.to_llm_message():
-        print(msg["text"])
+    contents = result.to_llm_message()
+    print(contents)
+
+ # end
