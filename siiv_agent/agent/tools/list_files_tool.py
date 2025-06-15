@@ -85,7 +85,7 @@ class ListFilesTool(ToolInterface):
     def _execute(self, directory: str, recursive: bool) -> ToolExecutionResult:
         args = {"directory": directory, "recursive": recursive}
 
-        print_orange(f"ListFilesTool.execute(directory='{directory}', recursive={recursive}")
+        print_orange(f"ListFilesTool.execute(directory='{directory}', recursive={recursive})")
 
         if directory.startswith("./"):
             directory = directory[2:]

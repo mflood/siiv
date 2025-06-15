@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Dict
+from agent.utils import print_orange
 
 from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
 
@@ -42,6 +43,7 @@ class FinishTaskTool(ToolInterface):
         self._logger.info(f"Executing finish_task tool with kwargs: {kwargs}")
         message = kwargs["summary"]
         self._logger.info(f"Raising TaskCompleteError with message: {message}")
+        print_orange("FinishTaskTool.execute()")
         raise TaskCompleteError(message)
 
 

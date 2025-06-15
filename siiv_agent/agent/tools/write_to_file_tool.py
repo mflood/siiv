@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Any, Dict
+from agent.utils import print_green, print_orange
 
 from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
 
@@ -40,6 +41,9 @@ class WriteToFileTool(ToolInterface):
 
     def _execute(self, file_path: str, content: str) -> ToolExecutionResult:
         args = {"file_path": file_path, "content": f"({len(content)} characters)"}
+
+        print_orange(f"WriteToFileTool.execute(file_path='{file_path}', content='...')")
+        print_green(content)
 
         try:
             if not str(file_path).startswith(("/", ".")):
