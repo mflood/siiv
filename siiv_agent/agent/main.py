@@ -221,9 +221,14 @@ if __name__ == "__main__":
     from agent.my_logging import init_logging
     init_logging()
 
-    current_working_dir = "/Users/matthewflood/workspace/language_mirror/Language Mirror"
-    current_working_dir = "/Users/matthewflood/workspace/siiv/siiv_agent"
+    #current_working_dir = "/Users/matthewflood/workspace/language_mirror/Language Mirror"
+    # user_input = """I am testing the tools in my llm calls.  I want to know if list_files works with directories that contain spaces.  Can you run list_files for a few sample folders and also try to read the contents of some files?"""
+    # user_input = """Examine the swift files in this iOS app (ignore the test files) and determine what the application does.  Create a marketing summary to post on the app store. Ave this summary to "app_store_summary.txt"""
+    # user_input = """Examine  this iOS app and determine which view controllers are actually being used in the app, and which as just POCs that are not really hooked up."""
 
+
+    current_working_dir = "/Users/matthewflood/workspace/siiv/siiv_agent"
     print("\n***** Type your prompt. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
     user_input = sys.stdin.read()
+
     handle_pytest_query(query_text=user_input, current_working_dir=current_working_dir)
