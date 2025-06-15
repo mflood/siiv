@@ -18,7 +18,7 @@ def run_mypy(file_path: str) -> Tuple[int, str, str]:
 
 def run_ruff(file_path: str) -> Tuple[int, str, str]:
     print("running ruff")
-    result = subprocess.run(["ruff", file_path], capture_output=True, text=True)
+    result = subprocess.run(["ruff", "check", file_path], capture_output=True, text=True)
     return (result.returncode, result.stdout, result.stderr)
 
 def run_pytest(file_path: str) -> Tuple[int, str, str]:

@@ -1,4 +1,6 @@
 openai
+ruff
+pytest
 python-dotenv
 black
 mypy
