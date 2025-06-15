@@ -61,6 +61,7 @@ def parse_tool_request_to_llm_format(text: str) -> dict:
         )
 
     block = text[start_idx + len(start_tag) : end_idx].strip()
+    logger.info("We are trying to parse a tool request: %s", block)
     block = re.sub(r'\s*({', '{', block)  # Allow optional whitespace before '{'
 
     # Log the content of block for debugging
@@ -191,11 +192,15 @@ def handle_pytest_query(query_text: str, current_working_dir: str):
             except NoToolRequestError:
                 logger.error("Got a message without a tool")
                 message = {"role": "assistant", "content": chat_and_tool_response.content}
-                logger.error(message)
                 messages.append(message)
+
                 print(chat_and_tool_response.content)
-                message = {"role": "user", "content": "You did not call a tool. You must call a tool"}
-                logger.error(message)
+
+                print("\n***** The agent is waiting for a response from you. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+                user_input = sys.stdin.read()
+
+                print("proceeding...")
+                message = {"role": "user", "content": user_input}
                 messages.append(message)
 
             except BadToolRequestError as e:
@@ -225,6 +230,7 @@ if __name__ == "__main__":
         # user_input = """I am testing the tools in my llm calls.  I want to know if list_files works with directories that contain spaces.  Can you run list_files for a few sample folders and also try to read the contents of some files?"""
         # user_input = """Examine the swift files in this iOS app (ignore the test files) and determine what the application does.  Create a marketing summary to post on the app store. Ave this summary to "app_store_summary.txt""
         user_input = """Examine  this iOS app and determine which view controllers are actually being used in the app, and which as just POCs that are not really hooked up."""
+        user_input = """Suggest and make improvements to RecordAudioViewController.  Ensure various states make sense, and that audio files are saved appropriately."""
 
     else:
         current_working_dir = "/Users/matthewflood/workspace/siiv/siiv_agent"
