@@ -11,7 +11,12 @@ LOGGER_NAME = __name__
 
 def _should_ignore_file(file_path: str) -> bool:
     logger = logging.getLogger(LOGGER_NAME)
+
     ignore_list = [
+        "..",
+        ".ruff_cache",
+        ".pytest_cache",
+        ".mypy_cache",
         "Index.noindex",
         "DerivedData",
         ".vscode",
