@@ -9,8 +9,8 @@ from typing import Any, Dict
 
 import demjson3
 
-from agent.llm_client import LLMClient
-from agent.open_ai_client import OpenAiClient
+from agent.llm_clients.llm_client import LLMClient
+from agent.llm_clients.open_ai_client import OpenAiClient
 from agent.prompts import get_system_message, get_user_task_message
 from agent.tools.finish_task_tool import TaskCompleteError
 from agent.tools.tool_manager import ToolManager

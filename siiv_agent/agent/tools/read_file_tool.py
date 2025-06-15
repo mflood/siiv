@@ -1,4 +1,5 @@
 import os
+from agent.utils import print_orange
 from pathlib import Path
 from typing import Any, Dict
 
@@ -35,6 +36,7 @@ class ReadFileTool(ToolInterface):
 
     def _execute(self, file_path: str) -> ToolExecutionResult:
         args = {"file_path": file_path}
+        print_orange(f"ReadFileTool.execute(file_path='{file_path}')")
 
         if not file_path.startswith("/"):
             file_path = os.path.join(self._root_path, file_path)

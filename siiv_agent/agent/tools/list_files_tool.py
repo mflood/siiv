@@ -1,4 +1,5 @@
 import logging
+from agent.utils import print_orange
 import os
 import subprocess
 from pathlib import Path
@@ -84,7 +85,7 @@ class ListFilesTool(ToolInterface):
     def _execute(self, directory: str, recursive: bool) -> ToolExecutionResult:
         args = {"directory": directory, "recursive": recursive}
 
-        self._logger.info(f"Listing files in'{directory}' recursively: {recursive}")
+        print_orange(f"ListFilesTool.execute(directory='{directory}', recursive={recursive}")
 
         if directory.startswith("./"):
             directory = directory[2:]
