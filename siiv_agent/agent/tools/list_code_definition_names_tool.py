@@ -5,9 +5,6 @@ import os
 from typing import Any, Dict, List
 from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 def extract_definitions(file_path: Path) -> List[str]:
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -36,7 +33,7 @@ class ListCodeDefinitionNamesTool(ToolInterface):
         return {
             "type": "function",
             "function": {
-                "name": "list_code_definition_names",
+                "name": "list_python_code_definition_names",
                 "description": (
                     "List top-level class, function, and method definitions in Python files "
                     "within a specified directory. This only lists definitions in files at "
@@ -73,14 +70,14 @@ class ListCodeDefinitionNamesTool(ToolInterface):
             if not str(path).startswith(str(self._root_path)):
                 logging.warning('Access denied for path: {path}')
                 return ToolExecutionResult(
-                    "list_code_definition_names", args, "", "Access denied", 1
+                    "list_python_code_definition_names", args, "", "Access denied", 1
                 )
 
             path_object = Path(path)
             if not path_object.exists() or not path_object.is_dir():
                 logging.error('Not a directory: {path}')
                 return ToolExecutionResult(
-                    "list_code_definition_names", args, "", "Not a directory", 1
+                    "list_python_code_definition_names", args, "", "Not a directory", 1
                 )
 
             results = []
@@ -93,12 +90,12 @@ class ListCodeDefinitionNamesTool(ToolInterface):
             logging.info('No definitions found in the specified directory.')
             logging.debug(f'Execution completed successfully. Output: {output}')
             return ToolExecutionResult(
-                "list_code_definition_names", args, output, "", 0
+                "list_python_code_definition_names", args, output, "", 0
             )
         except Exception as e:
             logging.error(f'Error during execution: {str(e)}')
             return ToolExecutionResult(
-                "list_code_definition_names", args, "", str(e), 1
+                "list_python_code_definition_names", args, "", str(e), 1
             )
 
 
