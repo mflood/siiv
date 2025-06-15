@@ -37,17 +37,19 @@ class SearchFilesTool(ToolInterface):
         try:
             path = kwargs["path"]
             regex = kwargs["regex"]
+            file_pattern = kwargs.get("file_pattern", None)
+
+            return self._execute(path, regex, file_pattern)
+
         except KeyError:
             return ToolExecutionResult(
                 tool_name="search_files",
-                args=args,
+                args=kwargs,
                 stdout="",
                 stderr="Error: search_files tool was not called with required arguments: 'path' and 'regex'",
                 return_code=1,
             )
 
-        file_pattern = kwargs.get("file_pattern", "*")
-        return self._execute(path, regex, file_pattern)
 
     def _execute(self, path: str, regex: str, file_pattern: str) -> ToolExecutionResult:
         args = {"path": path, "regex": regex, "file_pattern": file_pattern}
