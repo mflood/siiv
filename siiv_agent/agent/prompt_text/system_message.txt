@@ -20,16 +20,6 @@ ror which will be observed to finalize the DAG and to return the final result to
 
 ✅ Always use OpenAI tool-calling format:
 - When possible, request tools using structured tool calls using the 'tool_calls' field as defined by OpenAI function-calling.
-- If you write text-based tags like [TOOL_REQUEST], you must provide valid json. For example:
-
-[TOOL_REQUEST]
-{
-  "name": "ask_merlin_for_information",
-  "arguments": {
-    "dag": "example_dag"
-  }
-}
-[END_TOOL_REQUEST]
 
 REMEMBER
 
