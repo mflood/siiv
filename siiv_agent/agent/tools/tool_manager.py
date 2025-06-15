@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 from agent.tools.execute_command_tool import ExecuteCommandTool
+from agent.tools.replace_in_file_tool import ReplaceInFileTool
 from agent.tools.list_files_tool import ListFilesTool
 from agent.tools.read_file_tool import ReadFileTool
 from agent.tools.search_files_tool import SearchFilesTool
@@ -59,7 +60,7 @@ class ToolManager:
                 ),
                 ListFilesTool(pwd=ROOT),
                 ReadFileTool(pwd=ROOT),
-                # ReplaceInFileTool(pwd=ROOT),
+                ReplaceInFileTool(pwd=ROOT),
                 SearchFilesTool(root_path=ROOT),
                 WriteToFileTool(root_path=ROOT),
                 FindFileTool(pwd=ROOT),
