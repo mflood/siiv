@@ -69,7 +69,7 @@ class ListFilesTool(ToolInterface):
 
     def execute(self, **kwargs) -> ToolExecutionResult:
         directory = kwargs["directory"]
-        recursive = kwargs.get("recursive", false)
+        recursive = kwargs.get("recursive", False)
         return self._execute(directory=directory, recursive=recursive)
 
     def _execute(self, directory: str, recursive: bool) -> ToolExecutionResult:

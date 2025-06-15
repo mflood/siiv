@@ -63,7 +63,7 @@ class ToolManager:
                 ReplaceInFileTool(pwd=ROOT),
                 SearchFilesTool(root_path=ROOT),
                 WriteToFileTool(root_path=ROOT),
-                FindFileTool(pwd=ROOT),
+                # FindFileTool(pwd=ROOT),
                 ListCodeDefinitionNamesTool(pwd=ROOT),
                 AskMerlinForInformationTool(pwd=ROOT),
                 FinishTaskTool(),

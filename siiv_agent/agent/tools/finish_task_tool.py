@@ -1,14 +1,22 @@
 from typing import Any, Dict
 from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
+import logging
+LOGGER_NAME = __name__
+
 class TaskCompleteError(Exception):
     """Raised when the agent has completed its task and is ready to return the final message to the user."""
 
     def __init__(self, message: str):
         super().__init__(message)
         self.message = message
+       
 
 class FinishTaskTool(ToolInterface):
+
+    def __init__(self):
+        self._logger = logging.getLogger(LOGGER_NAME)
+
     def get_schema(self) -> Dict[str, Any]:
         return {
             "type": "function",
@@ -18,18 +26,20 @@ class FinishTaskTool(ToolInterface):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "message": {
+                        "summary": {
                             "type": "string",
                             "description": "A summary of the steps taken or results obtained by the agent.",
                         },
                     },
-                    "required": ["message"],
+                    "required": ["summary"],
                 },
             },
         }
 
     def execute(self, **kwargs) -> ToolExecutionResult:
-        message = kwargs["message"]
+        self._logger.info(f"Executing finish_task tool with kwargs: {kwargs}")
+        message = kwargs["summary"] 
+        self._logger.info(f"Raising TaskCompleteError with message: {message}")
         raise TaskCompleteError(message)
 
 if __name__ == "__main__":
