@@ -106,7 +106,7 @@ Critical rules:
                 if search_text not in modified:
                     return ToolExecutionResult(
                         "replace_in_file", args, 
-                        f"", "SEARCH block not found:\n{search_text}", 1
+                        f"", f"SEARCH block not found:\n{search_text}", 1
                     )
                 modified = modified.replace(search_text, replace_text, 1)
                 replacements += 1
