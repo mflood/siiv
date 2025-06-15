@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import pprint
 import os
 from datetime import datetime
@@ -28,6 +29,7 @@ class OpenAiClient:
 
     def call_chat(self, messages: List[dict], tool_schema=List[dict]):
 
+        time.sleep(5)
         response = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
