@@ -1,0 +1,32 @@
+## Instructions for Creating Python Tests with Pytest
+
+### Proposed Directory Structure:
+
+```
+/Users/matthewflood/workspace/siiv/siiv_agent/
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_processor.py
+│   ├── test_agent/
+│   │   ├── __init__.py
+│   │   ├── test_agent_functionality1.py
+│   │   └── test_agent_functionality2.py
+│   └── fixtures/
+│       ├── __init__.py
+│   │   └── test_fixtures.py
+│
+└── ...
+```
+
+### File Naming Convention:
+- Use the prefix `test_` for all test files.
+- Organize tests by the modules they are testing.
+- Group related tests in subdirectories if necessary.
+- Use descriptive names for each test file and test functions.
+
+### Directions for Ensuring Quality Unit Tests:
+- Each test function should have a clear, descriptive name about what it tests.
+- Use fixtures for setting up any necessary state or context for tests.
+- Aim for 100% coverage by including tests for all functions, edge cases, and error handling paths.
+- Write tests that are easy to understand, ideally with comments explaining the purpose of each test.
