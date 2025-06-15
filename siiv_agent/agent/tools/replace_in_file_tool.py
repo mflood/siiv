@@ -1,11 +1,15 @@
-```python
 from pathlib import Path
 from typing import Any, Dict
-from tools.tool_interface import ToolInterface, ToolExecutionResult
+from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+import os
+import re
+import logging
+LOGGER_NAME = __name__
 
 class ReplaceInFileTool(ToolInterface):
     def __init__(self, pwd: str):
-        self._root_path = Path(pwd).resolve()
+        self._root_path = pwd
+        self._logger = logging.getLogger(LOGGER_NAME)
 
     def get_schema(self) -> Dict[str, Any]:
         return {
@@ -25,11 +29,11 @@ class ReplaceInFileTool(ToolInterface):
                             "type": "string",
                             "description": """One or more SEARCH/REPLACE blocks following this exact format:
 
-------------- SEARCH
+------- SEARCH
 [exact content to find]
-=============
+=======
 [new content to replace with]
-+++++++++++++ REPLACE
++++++++ REPLACE
 
 Critical rules:
 1. SEARCH content must match the associated file section to find EXACTLY:
@@ -59,28 +63,42 @@ Critical rules:
 
     
     def execute(self, **kwargs) -> ToolExecutionResult:
-        return self._Execute(file_path=kwargs["file_path"], diff=kwargs["diff"])
+        return self._execute(file_path=kwargs["file_path"], diff=kwargs["diff"])
 
     def _execute(self, file_path: str, diff: str) -> ToolExecutionResult:
-        args = {"file_path", "diff"}
+        args = {"file_path": file_path, "diff": diff}
 
         try:
-            full_path = (self._root_path / file_path).resolve()
-            if not full_path.startswith(str(self._root_path)):
+            if not file_path.startswith("/"):
+                file_path = os.path.join(self._root_path, file_path)
+
+            if not file_path.startswith(str(self._root_path)):
                 return ToolExecutionResult(
-                    "replace_in_file", args, **"Access denied!", 1
+                    tool_name="replace_in_file",
+                    args=args,
+                    stdout="",
+                    stderr="Access denied!",
+                    return_code=1,
                 )
-            if not full_path.exists() or not full_path.is_file():
+            
+            path_object = Path(file_path)
+            if not path_object.exists() or not path_object.is_file():
                 return ToolExecutionResult(
-                    "replace_in_file", args, **"File does not exist.", 1
+                    tool_name="replace_in_file",
+                    args=args,
+                    stdout="",
+                    stderr="File does not exist.",
+                    return_code=1,
                 )
 
-            content = full_path.read_text()
+            self._logger.info(f"Reading file {file_path}")
+            content = path_object.read_text()
 
             pattern = re.compile(
-                r"--(?P<SEARCH>[\s\S]+?)\n(.*?)\n(.*?)\n([\s\S]+?)\n", REPLACE", re.DOTALL
+                r"-{7,} SEARCH\n(.*?)\n={7,}\n(.*?)\n\+{7,} REPLACE", re.DOTALL
             )
             changes = pattern.findall(diff)
+            self._logger.info(f"Found {len(changes)} changes to make in {diff}. {changes}") 
 
             modified = content
             replacements = 0
@@ -93,15 +111,36 @@ Critical rules:
                 modified = modified.replace(search_text, replace_text, 1)
                 replacements += 1
 
-            full_path.write_text(modified)
+            self._logger.info(f"Writing file {file_path}")
+            path_object.write_text(modified)
             return ToolExecutionResult(
-                "replace_in_file", 
-                args, 
-                f"{replacements} block(s) replaced successfully.", 
-                str(replacements),  
-                replacements
+                tool_name="replace_in_file",
+                args=args,
+                stdout=f"{replacements} block(s) replaced successfully.",
+                stderr="",
+                return_code=0,
             )
 
         except Exception as e:
-            return ToolExecutionResult("replace_in_file", args, **str(e), 1)
-    ```
+            return ToolExecutionResult(
+                tool_name="replace_in_file", 
+                args=args,
+                stdout="",
+                stderr=str(e),
+                return_code=1,
+            )
+
+if __name__ == "__main__":
+    import agent.my_logging
+    pwd = "/Users/matthewflood/workspace/siiv/photo_to_code/"
+    tool = ReplaceInFileTool(pwd=pwd)
+    results = tool.execute(file_path=f"replace_example.txt", diff=f"""
+--------- SEARCH
+FROG
+=========
+VEGETABLES                                             
++++++++++ REPLACE
+""")
+    print(results)
+    content = results.to_llm_message()
+    print(content)
