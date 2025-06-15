@@ -1,5 +1,6 @@
 black
 demjson3
+flake8
 isort
 mypy
 openai
@@ -8,4 +9,3 @@ pytest
 python-dotenv
 requests
 ruff
-flake8
