@@ -61,7 +61,10 @@ def parse_tool_request_to_llm_format(text: str) -> dict:
         )
 
     block = text[start_idx + len(start_tag) : end_idx].strip()
-    block = re.sub(r'\s+(\s*{', '{', block)
+    block = re.sub(r'\s+({', '{', block)  # Removed unnecessary grouping
+
+    # Log the content of block for debugging
+    logger.info("Content of block before parsing: %s", block)
 
     try:
         logger.info("Attempting to parse json block: %s", block)
@@ -219,7 +222,8 @@ if __name__ == "__main__":
     init_logging()
 
     current_working_dir = "/Users/matthewflood/workspace/language_mirror/Language Mirror"
-    print("\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+    current_working_dir = "/Users/matthewflood/workspace/siiv/siiv_agent"
+
+    print("\n***** Type your prompt. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
     user_input = sys.stdin.read()
     handle_pytest_query(query_text=user_input, current_working_dir=current_working_dir)
-
