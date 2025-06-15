@@ -1,11 +1,11 @@
+black
+demjson3
+isort
+mypy
 openai
-ruff
+pycodestyle
 pytest
 python-dotenv
-black
-mypy
-isort
-demjson3
 requests
+ruff
 flake8
-pycodestyle
