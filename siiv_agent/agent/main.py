@@ -1,5 +1,7 @@
 import json
 import logging
+import re
+import sys
 import pprint
 import uuid
 import demjson3
@@ -16,7 +18,6 @@ llm_client = OpenAiClient()
 LOGGER_NAME = __name__
 
 logger = logging.getLogger(LOGGER_NAME)
-tool_manager = ToolManager.default()
 
 import json
 from typing import Any, Dict
@@ -85,12 +86,11 @@ def write_contents_to_file(filepath: str, content: str) -> str:
             handle.write(content)
         return 'Success'
 
-def handle_pytest_query(query_text: str):
+def handle_pytest_query(query_text: str, current_working_dir: str):
 
     # related_code_chunks = vector_client.retrieve(query_text=query_text, top_k=10)
     # context_string = vector_client.build_context_string(code_chunks=related_code_chunks)
 
-    current_working_dir = "/Users/matthewflood/workspace/siiv/photo_to_code"
     current_time = datetime.datetime.now()
 
     messages = [
@@ -107,6 +107,7 @@ def handle_pytest_query(query_text: str):
             current_time=current_time),
     ]
 
+    tool_manager = ToolManager.default(root_dir=current_working_dir)
     tool_schema = tool_manager.get_tools_schema_list()
 
     logger.info("----------- START INVOCATION -------------")
@@ -143,7 +144,6 @@ def handle_pytest_query(query_text: str):
 
             for tool_call in tool_calls:
                 logger.info("tool call: %s", tool_call)
-                logger.info("tool call dir: %s", dir(tool_call))
 
                 # open ai
                 if True:
@@ -191,7 +191,7 @@ def handle_pytest_query(query_text: str):
                 message = {"role": "assistant", "content": chat_and_tool_response.content}
                 logger.error(message)
                 messages.append(message)
-
+                print(chat_and_tool_response.content)
                 message = {"role": "user", "content": "You did not call a tool. You must call a tool"}
                 logger.error(message)
                 messages.append(message)
@@ -218,6 +218,8 @@ if __name__ == "__main__":
     from agent.my_logging import init_logging
     init_logging()
 
+    current_working_dir = "/Users/matthewflood/workspace/language_mirror/Language Mirror"
+    print("\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+    user_input = sys.stdin.read()
+    handle_pytest_query(query_text=user_input, current_working_dir=current_working_dir)
 
-    query_text = "Provide information about the files in the current directory"
-    handle_pytest_query(query_text)

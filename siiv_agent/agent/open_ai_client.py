@@ -28,9 +28,6 @@ class OpenAiClient:
 
     def call_chat(self, messages: List[dict], tool_schema=List[dict]):
 
-
-        pprint.pprint(tool_schema)
-
         response = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
@@ -41,7 +38,6 @@ class OpenAiClient:
 
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S") + f"_{now.microsecond // 1000:03d}"
-        print(dir(response))
 
         with open(f"_openai_response_{timestamp}.log", "w", encoding="utf-8") as handle:
 
@@ -50,8 +46,6 @@ class OpenAiClient:
 
         try:
             choice = response.choices[0]
-            print(dir(choice))
-            print(dir(choice.message))
             content = choice.message.content
             tool_calls = choice.message.tool_calls
             return ChatAndToolResponse(content=content, tool_calls=tool_calls)

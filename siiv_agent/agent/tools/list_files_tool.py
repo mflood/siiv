@@ -76,6 +76,9 @@ class ListFilesTool(ToolInterface):
         args = {"directory": directory, "recursive": recursive}
 
         self._logger.info(f"Listing files in'{directory}' recursively: {recursive}")
+        
+        if directory.startswith("./"):
+            directory = directory[2:]
 
         if not directory.startswith("/"):
             directory = os.path.join(self._root_path, directory)

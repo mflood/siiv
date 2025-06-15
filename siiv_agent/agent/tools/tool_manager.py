@@ -12,8 +12,6 @@ from agent.tools.list_code_definition_names_tool import ListCodeDefinitionNamesT
 from agent.tools.ask_merlin_for_information_tool import AskMerlinForInformationTool
 from agent.tools.finish_task_tool import FinishTaskTool
 
-ROOT = "/Users/matthewflood/workspace/siiv/photo_to_code"
-
 class TaskCompleteError(Exception):
     pass
 
@@ -39,11 +37,11 @@ class ToolManager:
         return tool.execute(**args) if tool else None
 
     @classmethod
-    def default(cls) -> "ToolManager":
+    def default(cls, root_dir: str) -> "ToolManager":
         return cls(
             [
                 ExecuteCommandTool(
-                    pwd=ROOT,
+                    pwd=root_dir,
                     allowed_commands=[
                         "pwd",
                         "whoami",
@@ -58,14 +56,14 @@ class ToolManager:
                         "pip",
                     ],
                 ),
-                ListFilesTool(pwd=ROOT),
-                ReadFileTool(pwd=ROOT),
-                ReplaceInFileTool(pwd=ROOT),
-                SearchFilesTool(root_path=ROOT),
-                WriteToFileTool(root_path=ROOT),
-                # FindFileTool(pwd=ROOT),
-                ListCodeDefinitionNamesTool(pwd=ROOT),
-                AskMerlinForInformationTool(pwd=ROOT),
+                ListFilesTool(pwd=root_dir),
+                ReadFileTool(pwd=root_dir),
+                ReplaceInFileTool(pwd=root_dir),
+                SearchFilesTool(root_path=root_dir),
+                WriteToFileTool(root_path=root_dir),
+                # FindFileTool(pwd=root_dir),
+                ListCodeDefinitionNamesTool(pwd=root_dir),
+                # AskMerlinForInformationTool(pwd=root_dir),
                 FinishTaskTool(),
             ]
         )
@@ -74,7 +72,8 @@ class ToolManager:
 if __name__ == "__main__":
     import json
 
-    manager = ToolManager.default()
+    ROOT = "/Users/matthewflood/workspace/siiv/photo_to_code"
+    manager = ToolManager.default(root_dir=ROOT)
     schema = manager.get_tools_schema_list()
     as_string = json.dumps(schema, indent=2)
     print(as_string)
