@@ -1,10 +1,11 @@
-from pathlib import Path
 from argparse import ArgumentParser
-from tqdm import tqdm
+from pathlib import Path
 from typing import List
-import requests
+
 import chromadb
+import requests
 from chromadb.config import Settings
+from tqdm import tqdm
 
 LM_STUDIO_ENDPOINT = "http://localhost:1234/v1/embeddings" # Adjust port if needed
 CHUNK_TEXT = "This is a sample chunk of text to embed using LM Studio."
@@ -18,9 +19,10 @@ CHROMA_COLLECTION_NAME = "code_chunks"
 import logging
 
 LOGGER_NAME = __name__
+from dataclasses import dataclass
+
 from embedding import get_lm_studio_embedding
 
-from dataclasses import dataclass
 
 @dataclass
 class CodeChunk:
@@ -121,9 +123,10 @@ class VectorClient():
         return '\n---\n'.join(context)
 
 if __name__ == "__main__":
-    import sys
-    import my_logging
     import pprint
+    import sys
+
+    import my_logging
 
     vector_client = VectorClient.factory()
 

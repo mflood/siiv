@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
+
 @dataclass
 class ToolExecutionResult:
     tool_name: str
@@ -25,6 +26,7 @@ class ToolExecutionResult:
         #     {"type": "text", "text": message_text},
         #     {"type": "text", "text": content_text},
         # ]
+
 
 class ToolInterface(ABC):
     @abstractmethod

@@ -1,7 +1,9 @@
+import os
 from pathlib import Path
 from typing import Any, Dict
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
-import os
+
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 
 class ReadFileTool(ToolInterface):
 
@@ -28,7 +30,7 @@ class ReadFileTool(ToolInterface):
         }
 
     def execute(self, **kwargs) -> ToolExecutionResult:
-        file_path = kwargs['file_path']
+        file_path = kwargs["file_path"]
         return self._execute(file_path=file_path)
 
     def _execute(self, file_path: str) -> ToolExecutionResult:
@@ -84,6 +86,7 @@ class ReadFileTool(ToolInterface):
                 stderr=str(e),
                 return_code=1,
             )
+
 
 if __name__ == "__main__":
     pwd = "/Users/matthewflood/workspace/siiv/"

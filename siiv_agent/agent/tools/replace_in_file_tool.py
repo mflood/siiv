@@ -1,10 +1,13 @@
-from pathlib import Path
-from typing import Any, Dict
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+import logging
 import os
 import re
-import logging
+from pathlib import Path
+from typing import Any, Dict
+
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 LOGGER_NAME = __name__
+
 
 class ReplaceInFileTool(ToolInterface):
     def __init__(self, pwd: str):
@@ -17,7 +20,7 @@ class ReplaceInFileTool(ToolInterface):
             "function": {
                 "name": "replace_in_file",
                 "description": "Replace sections of content in an existing file using SEARCH/REPLACE blocks "
-                               "that define exact changes to specific parts of the file.",
+                "that define exact changes to specific parts of the file.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -53,15 +56,14 @@ Critical rules:
 4. To move code: Use two SEARCH/REPLACE blocks (one to delete from original & one to insert
     at new location)
 5. To delete code: Use empty REPLACE section",
-"""
-                       },
-                   },
-                   "required": ["file_path", "diff"],
-               },
-           }
-       }
+""",
+                        },
+                    },
+                    "required": ["file_path", "diff"],
+                },
+            },
+        }
 
-    
     def execute(self, **kwargs) -> ToolExecutionResult:
         return self._execute(file_path=kwargs["file_path"], diff=kwargs["diff"])
 
@@ -80,7 +82,7 @@ Critical rules:
                     stderr="Access denied!",
                     return_code=1,
                 )
-            
+
             path_object = Path(file_path)
             if not path_object.exists() or not path_object.is_file():
                 return ToolExecutionResult(
@@ -98,15 +100,20 @@ Critical rules:
                 r"-{7,} SEARCH\n(.*?)\n={7,}\n(.*?)\n\+{7,} REPLACE", re.DOTALL
             )
             changes = pattern.findall(diff)
-            self._logger.info(f"Found {len(changes)} changes to make in {diff}. {changes}") 
+            self._logger.info(
+                f"Found {len(changes)} changes to make in {diff}. {changes}"
+            )
 
             modified = content
             replacements = 0
             for search_text, replace_text in changes:
                 if search_text not in modified:
                     return ToolExecutionResult(
-                        "replace_in_file", args, 
-                        f"", f"SEARCH block not found:\n{search_text}", 1
+                        "replace_in_file",
+                        args,
+                        f"",
+                        f"SEARCH block not found:\n{search_text}",
+                        1,
                     )
                 modified = modified.replace(search_text, replace_text, 1)
                 replacements += 1
@@ -123,24 +130,29 @@ Critical rules:
 
         except Exception as e:
             return ToolExecutionResult(
-                tool_name="replace_in_file", 
+                tool_name="replace_in_file",
                 args=args,
                 stdout="",
                 stderr=str(e),
                 return_code=1,
             )
 
+
 if __name__ == "__main__":
     import agent.my_logging
+
     pwd = "/Users/matthewflood/workspace/siiv/photo_to_code/"
     tool = ReplaceInFileTool(pwd=pwd)
-    results = tool.execute(file_path=f"replace_example.txt", diff=f"""
+    results = tool.execute(
+        file_path=f"replace_example.txt",
+        diff=f"""
 --------- SEARCH
 FROG
 =========
 VEGETABLES                                             
 +++++++++ REPLACE
-""")
+""",
+    )
     print(results)
     content = results.to_llm_message()
     print(content)

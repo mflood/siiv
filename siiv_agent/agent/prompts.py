@@ -1,7 +1,7 @@
-from enum import Enum
-from agent.tools.list_files_tool import ListFilesTool
 import datetime
 import textwrap
+from enum import Enum
+
 from agent.tools.list_files_tool import ListFilesTool
 
 

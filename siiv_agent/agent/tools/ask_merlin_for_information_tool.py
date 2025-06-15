@@ -1,6 +1,8 @@
-from typing import Any, Dict
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 import sys
+from typing import Any, Dict
+
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 
 class AskMerlinForInformationTool(ToolInterface):
     def __init__(self, pwd: str):
@@ -32,7 +34,9 @@ class AskMerlinForInformationTool(ToolInterface):
         args = {"prompt": prompt}
 
         try:
-            print("\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+            print(
+                "\n***** Human input required:\n\n{prompt}\n\n(Type your response. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n"
+            )
             user_input = sys.stdin.read()
             return ToolExecutionResult(
                 tool_name="ask_human_for_information",
@@ -50,6 +54,7 @@ class AskMerlinForInformationTool(ToolInterface):
                 stderr=str(e),
                 return_code=1,
             )
+
 
 if __name__ == "__main__":
     tool = AskMerlinForInformationTool(pwd=".")

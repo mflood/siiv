@@ -7,3 +7,5 @@ mypy
 isort
 demjson3
 requests
+flake8
+pycodestyle

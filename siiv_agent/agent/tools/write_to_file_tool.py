@@ -1,7 +1,9 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import Any, Dict
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
+
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 
 class WriteToFileTool(ToolInterface):
 
@@ -28,7 +30,7 @@ class WriteToFileTool(ToolInterface):
                     },
                     "required": ["file_path", "content"],
                 },
-            }
+            },
         }
 
     def execute(self, **kwargs) -> ToolExecutionResult:
@@ -73,6 +75,8 @@ class WriteToFileTool(ToolInterface):
                 stderr=str(ex),
                 return_code=1,
             )
+
+
 if __name__ == "__main__":
 
     pwd = Path.cwd()
@@ -83,4 +87,4 @@ if __name__ == "__main__":
     contents = result.to_llm_message()
     print(contents)
 
- # end
+# end

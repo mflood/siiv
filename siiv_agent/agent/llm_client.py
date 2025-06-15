@@ -1,9 +1,9 @@
+import json
+import logging
 from dataclasses import dataclass
-
 from datetime import datetime
 from typing import Any, List, Optional
-import logging
-import json
+
 import requests
 
 # from agent.tools.tool_manager import ToolManager
@@ -22,10 +22,12 @@ LM_MODEL = "deepset/deepset-k1-6528-qwen3-8b"
 LM_MODEL = "google/gemma-3-12b"
 LM_API_KEY = "whatever"
 
+
 @dataclass
 class ChatAndToolResponse:
     content: Optional[str]
     tool_calls: List[Any]
+
 
 class LLMClient:
     def __init__(self):
@@ -34,7 +36,9 @@ class LLMClient:
         self._api_key = LM_API_KEY
         self._logger = logging.getLogger(LOGGER_NAME)
 
-    def call_chat(self, messages: List[dict], tool_schema=dict, temperature=0.8, max_tokens=8192) :
+    def call_chat(
+        self, messages: List[dict], tool_schema=dict, temperature=0.8, max_tokens=8192
+    ):
         headers = {}
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
@@ -47,20 +51,22 @@ class LLMClient:
             "n": 1,
             "tools": [],
             "tool_choice": "auto",
-        } 
+        }
 
         now = datetime.now()
-        timestamp = now.strftime('%Y%m%d_%H%M%S') + f"_{now.microsecond // 1000:03d}"
+        timestamp = now.strftime("%Y%m%d_%H%M%S") + f"_{now.microsecond // 1000:03d}"
 
         with open(f"_llm_request_{timestamp}.log", "w", encoding="utf-8") as handle:
             as_string = json.dumps(payload, indent=2)
             handle.write(as_string)
 
-        #del payload['max_tokens']
-        response = requests.post(self._url, headers=headers,json=payload)
+        # del payload['max_tokens']
+        response = requests.post(self._url, headers=headers, json=payload)
 
         if response.status_code != 200:
-            self._logger.error("LLM call failed: %s %s" , response.status_code, response.text)
+            self._logger.error(
+                "LLM call failed: %s %s", response.status_code, response.text
+            )
             raise Exception(f"LLM call failed: {response.status_code} {response.text}")
 
         data = response.json()
@@ -77,13 +83,17 @@ class LLMClient:
             print("Exception!!!!")
             print(data)
 
+
 if __name__ == "__main__":
 
     import agent.my_logging
 
     messages = [
-        {"role": "system", "content": "You are a cheerful and helpful agent. Provide answers as complete sentences and include fun emojis. Don't use a tool if you already know the answer. The only tool available is onnect_to_file. Do not use that tool unless instructed to."},
-        {"role": "user", "content": "What is the wisest thing anyone has ever said?"}
+        {
+            "role": "system",
+            "content": "You are a cheerful and helpful agent. Provide answers as complete sentences and include fun emojis. Don't use a tool if you already know the answer. The only tool available is onnect_to_file. Do not use that tool unless instructed to.",
+        },
+        {"role": "user", "content": "What is the wisest thing anyone has ever said?"},
     ]
 
     client = LLMClient()

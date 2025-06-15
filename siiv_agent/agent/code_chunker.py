@@ -1,7 +1,8 @@
 import ast
-from pathlib import Path
 from dataclasses import dataclass
-from typing import Generator, Optional, List, Union, Dict
+from pathlib import Path
+from typing import Dict, Generator, List, Optional, Union
+
 
 @dataclass
 class CodeChunk:
@@ -27,6 +28,7 @@ class CodeChunk:
                 return_dict[key] = ""
         return return_dict
 
+
 def get_source_segment(source: str, node: ast.AST) -> str:
     """Return exact code for an AST node from source."""
     lines = source.splitlines(keepends=True)
@@ -34,7 +36,10 @@ def get_source_segment(source: str, node: ast.AST) -> str:
     end = getattr(node, "end_lineno", node.lineno)  # Python >=3.8
     return "".join(lines[start:end])
 
-def extract_code_chunks(file_path: Union[str, Path]) -> Generator[CodeChunk, None, None]:
+
+def extract_code_chunks(
+    file_path: Union[str, Path],
+) -> Generator[CodeChunk, None, None]:
     path = Path(file_path)
     source = path.read_text(encoding="utf-8")
     lines = source.splitlines(keepends=True)
@@ -58,7 +63,9 @@ def extract_code_chunks(file_path: Union[str, Path]) -> Generator[CodeChunk, Non
                 code_type="function",
                 docstring=ast.get_docstring(node),
             )
-            used_lines.update(range(node.lineno, getattr(node, "end_lineno", node.lineno)+1))
+            used_lines.update(
+                range(node.lineno, getattr(node, "end_lineno", node.lineno) + 1)
+            )
 
         elif isinstance(node, ast.ClassDef):
             yield CodeChunk(
@@ -70,7 +77,9 @@ def extract_code_chunks(file_path: Union[str, Path]) -> Generator[CodeChunk, Non
                 code_type="class",
                 docstring=ast.get_docstring(node),
             )
-            used_lines.update(range(node.lineno, getattr(node, "end_lineno", node.lineno)+1))
+            used_lines.update(
+                range(node.lineno, getattr(node, "end_lineno", node.lineno) + 1)
+            )
 
         elif isinstance(node, (ast.Import, ast.ImportFrom)):
             yield CodeChunk(
@@ -86,7 +95,9 @@ def extract_code_chunks(file_path: Union[str, Path]) -> Generator[CodeChunk, Non
 
     # Add top-level code chunk if any remaining lines
     top_level_lines = [
-        (i, line) for i, line in enumerate(lines, start=1) if i not in used_lines and line.strip()
+        (i, line)
+        for i, line in enumerate(lines, start=1)
+        if i not in used_lines and line.strip()
     ]
     if top_level_lines:
         start_line = top_level_lines[0][0]

@@ -1,11 +1,13 @@
+import logging
+import os
 import subprocess
 from pathlib import Path
-import os
 from typing import Any, Dict, List
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
 
-import logging
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 LOGGER_NAME = __name__
+
 
 def _should_ignore_file(file_path: str) -> bool:
     logger = logging.getLogger(LOGGER_NAME)
@@ -24,7 +26,6 @@ def _should_ignore_file(file_path: str) -> bool:
         ".gitignore",
         "/venv/",
         "/__pycache__/",
-
     ]
 
     for match in ignore_list:
@@ -38,6 +39,7 @@ def _should_ignore_file(file_path: str) -> bool:
             return True
 
     return False
+
 
 class ListFilesTool(ToolInterface):
 
@@ -78,13 +80,15 @@ class ListFilesTool(ToolInterface):
         args = {"directory": directory, "recursive": recursive}
 
         self._logger.info(f"Listing files in'{directory}' recursively: {recursive}")
-        
+
         if directory.startswith("./"):
             directory = directory[2:]
 
         if not directory.startswith("/"):
             directory = os.path.join(self._root_path, directory)
-            self._logger.info(f"Appending root path '{self._root_path}' to directory: {directory}")
+            self._logger.info(
+                f"Appending root path '{self._root_path}' to directory: {directory}"
+            )
 
         if not str(directory).startswith(str(self._root_path)):
             return ToolExecutionResult(
@@ -94,7 +98,6 @@ class ListFilesTool(ToolInterface):
                 stderr="Access denied: outside allowed directory",
                 return_code=1,
             )
-
 
         path_object = Path(directory)
 
@@ -120,7 +123,12 @@ class ListFilesTool(ToolInterface):
                 if not _should_ignore_file(path):
                     files.append(path)
 
-            self._logger.info(f"%d of %d files were valid in %s", len(files), num_candidates, path_object)
+            self._logger.info(
+                f"%d of %d files were valid in %s",
+                len(files),
+                num_candidates,
+                path_object,
+            )
 
             return ToolExecutionResult(
                 tool_name="list_files",
@@ -138,6 +146,7 @@ class ListFilesTool(ToolInterface):
                 stderr=str(e),
                 return_code=1,
             )
+
 
 if __name__ == "__main__":
 

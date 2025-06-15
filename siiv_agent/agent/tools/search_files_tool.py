@@ -1,7 +1,9 @@
+import re
 from pathlib import Path
 from typing import Any, Dict
-from agent.tools.tool_interface import ToolInterface, ToolExecutionResult
-import re
+
+from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
+
 
 class SearchFilesTool(ToolInterface):
     def __init__(self, root_path: str):
@@ -43,7 +45,7 @@ class SearchFilesTool(ToolInterface):
                 stderr="Error: search_files tool was not called with required arguments: 'path' and 'regex'",
                 return_code=1,
             )
-            
+
         file_pattern = kwargs.get("file_pattern", "*")
         return self._execute(path, regex, file_pattern)
 
@@ -91,12 +93,10 @@ class SearchFilesTool(ToolInterface):
                     for idx, line in enumerate(lines):
                         compiled_search = compiled.search(line)
                         if compiled_search:
-                            context = '\n'.join(
-                                lines[max(idx - 2, 0): min(len(lines), idx + 3)]
+                            context = "\n".join(
+                                lines[max(idx - 2, 0) : min(len(lines), idx + 3)]
                             )
-                            result_lines.append(
-                                f"{file_path}:{idx+1}\n{context}\n\n"
-                            )
+                            result_lines.append(f"{file_path}:{idx+1}\n{context}\n\n")
 
                 except Exception as ex:
                     result_lines.append(f"[{file_path}] Error reading file: {ex}")
@@ -119,7 +119,14 @@ class SearchFilesTool(ToolInterface):
             )
 
         except Exception as ex:
-            return ToolExecutionResult(tool_name="search_files", args=args, stdout=str(ex), stderr="", return_code=1)
+            return ToolExecutionResult(
+                tool_name="search_files",
+                args=args,
+                stdout=str(ex),
+                stderr="",
+                return_code=1,
+            )
+
 
 if __name__ == "__main__":
     root = "/Users/matthewflood/workspace/siiv/photo_to_code"

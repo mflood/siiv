@@ -1,18 +1,19 @@
+import datetime
 import json
 import logging
+import pprint
 import re
 import sys
-import pprint
 import uuid
+from typing import Any, Dict
+
 import demjson3
-import datetime
+
 from agent.llm_client import LLMClient
 from agent.open_ai_client import OpenAiClient
 from agent.prompts import get_system_message, get_user_task_message
-from agent.tools.tool_manager import ToolManager
 from agent.tools.finish_task_tool import TaskCompleteError
-import json
-from typing import Any, Dict
+from agent.tools.tool_manager import ToolManager
 
 llm_client = LLMClient()
 llm_client = OpenAiClient()
@@ -25,31 +26,34 @@ logger = logging.getLogger(LOGGER_NAME)
 class BadToolRequestError(Exception):
     pass
 
+
 class NoToolRequestError(Exception):
     pass
+
 
 class InvalidCommandJson(Exception):
     pass
 
+
 def parse_tool_request_to_llm_format(text: str) -> dict:
     """
     Converts the last TOOL_REQUEST block into an LLM-style tool call dict.
-    
+
     Args:
         text (str): The input string with [TOOL_REQUEST] JSON block.
-    
+
     Returns:
         ... dict: Tool call in LLM function format.
     """
     logger = logging.getLogger(LOGGER_NAME)
-    logger.info('looking for TOOL_REQUEST block in text')
+    logger.info("looking for TOOL_REQUEST block in text")
 
-    end_idx = text.find('[END_TOOL_REQUEST]')
+    end_idx = text.find("[END_TOOL_REQUEST]")
     if end_idx == -1:
-        end_idx = text.rfind('[/TOOL_REQUEST]')
+        end_idx = text.rfind("[/TOOL_REQUEST]")
 
     if end_idx == -1:
-        logger.info('No END_TOOL_REQUEST tag found')
+        logger.info("No END_TOOL_REQUEST tag found")
         raise NoToolRequestError("Missing [END_TOOL_REQUEST] tag")
 
     start_tag = "[TOOL_REQUEST]"
@@ -62,7 +66,7 @@ def parse_tool_request_to_llm_format(text: str) -> dict:
 
     block = text[start_idx + len(start_tag) : end_idx].strip()
     logger.info("We are trying to parse a tool request: %s", block)
-    block = re.sub(r'\s*({', '{', block)  # Allow optional whitespace before '{'
+    block = re.sub(r"\s*({", "{", block)  # Allow optional whitespace before '{'
 
     # Log the content of block for debugging
     logger.info("Content of block before parsing: %s", block)
@@ -85,10 +89,12 @@ def parse_tool_request_to_llm_format(text: str) -> dict:
     logger.info("Found tool call: %s", tool_call)
     return tool_call
 
+
 def write_contents_to_file(filepath: str, content: str) -> str:
-        with open("generated_file.py", "w", encoding="utf-8") as handle:
-            handle.write(content)
-        return 'Success'
+    with open("generated_file.py", "w", encoding="utf-8") as handle:
+        handle.write(content)
+    return "Success"
+
 
 def handle_pytest_query(query_text: str, current_working_dir: str):
 
@@ -102,12 +108,13 @@ def handle_pytest_query(query_text: str, current_working_dir: str):
             full_current_working_dir=current_working_dir,
             default_shell="bin/zsh",
             home_dir="/Users/matthewflood",
-            operating_system="macOS"),
-
+            operating_system="macOS",
+        ),
         get_user_task_message(
             task=query_text,
             full_current_working_dir=current_working_dir,
-            current_time=current_time),
+            current_time=current_time,
+        ),
     ]
 
     tool_manager = ToolManager.default(root_dir=current_working_dir)
@@ -158,10 +165,16 @@ def handle_pytest_query(query_text: str, current_working_dir: str):
                     tool_call_id = tool_call["id"]
                     tool_call_function_name = tool_call["function"]["name"]
                     tool_call_args = json.loads(tool_call["function"]["arguments"])
-                logger.info("Invoking tool: %s with args: %s", tool_call_function_name, tool_call_args)
+                logger.info(
+                    "Invoking tool: %s with args: %s",
+                    tool_call_function_name,
+                    tool_call_args,
+                )
 
                 try:
-                    result = tool_manager.execute_tool_by_name(tool_call_function_name, tool_call_args)
+                    result = tool_manager.execute_tool_by_name(
+                        tool_call_function_name, tool_call_args
+                    )
                 except TaskCompleteError as e:
                     logger.info("Got TaskComplete!!")
                     logger.info("Final message: %s", e)
@@ -191,12 +204,17 @@ def handle_pytest_query(query_text: str, current_working_dir: str):
                 tool_calls = [tool_call]
             except NoToolRequestError:
                 logger.error("Got a message without a tool")
-                message = {"role": "assistant", "content": chat_and_tool_response.content}
+                message = {
+                    "role": "assistant",
+                    "content": chat_and_tool_response.content,
+                }
                 messages.append(message)
 
                 print(chat_and_tool_response.content)
 
-                print("\n***** The agent is waiting for a response from you. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+                print(
+                    "\n***** The agent is waiting for a response from you. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n"
+                )
                 user_input = sys.stdin.read()
 
                 print("proceeding...")
@@ -212,21 +230,30 @@ def handle_pytest_query(query_text: str, current_working_dir: str):
                 messages.append(message)
             except InvalidCommandJson as e:
 
-                message = {"role": "assistant", "content": chat_and_tool_response.content}
+                message = {
+                    "role": "assistant",
+                    "content": chat_and_tool_response.content,
+                }
                 logger.error(message)
                 messages.append(message)
 
-                message = {"role": "user", "content": f"Your tool call was not valid json. Error: {e}"}
+                message = {
+                    "role": "user",
+                    "content": f"Your tool call was not valid json. Error: {e}",
+                }
                 logger.error(message)
                 messages.append(message)
 
 
 if __name__ == "__main__":
     from agent.my_logging import init_logging
+
     init_logging()
 
     if False:
-        current_working_dir = "/Users/matthewflood/workspace/language_mirror/Language Mirror"
+        current_working_dir = (
+            "/Users/matthewflood/workspace/language_mirror/Language Mirror"
+        )
         # user_input = """I am testing the tools in my llm calls.  I want to know if list_files works with directories that contain spaces.  Can you run list_files for a few sample folders and also try to read the contents of some files?"""
         # user_input = """Examine the swift files in this iOS app (ignore the test files) and determine what the application does.  Create a marketing summary to post on the app store. Ave this summary to "app_store_summary.txt""
         user_input = """Examine  this iOS app and determine which view controllers are actually being used in the app, and which as just POCs that are not really hooked up."""
@@ -234,7 +261,10 @@ if __name__ == "__main__":
 
     else:
         current_working_dir = "/Users/matthewflood/workspace/siiv/siiv_agent"
-        print("\n***** Type your prompt. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n")
+        print(f"Current Working Dir {current_working_dir}")
+        print(
+            "\n***** Type your prompt. Press Ctrl-D or Ctrl-Z (Windows) when done.)\n"
+        )
         user_input = sys.stdin.read()
 
     handle_pytest_query(query_text=user_input, current_working_dir=current_working_dir)

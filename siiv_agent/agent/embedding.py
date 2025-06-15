@@ -17,6 +17,7 @@ EMBEDDING_MODEL = "text-embedding-nomic-embed-text-v1.5@e9.0"
 EMBEDDING_MODE = "lm-studio ignores this and just uses whatever is loaded"
 CHROMA_COLLECTION_NAME = "code_chunks"
 
+
 # get lf embedding from LM Studio
 def get_lm_studio_embedding(text: str) -> List[float]:
     logger = logging.getLogger(LOGGER_NAME)
@@ -26,12 +27,13 @@ def get_lm_studio_embedding(text: str) -> List[float]:
     try:
         response = requests.post(LM_STUDIO_ENDPOINT, json=payload)
         response.raise_for_status()
-        embedding = response.json()['data'][0]['embedding']
+        embedding = response.json()["data"][0]["embedding"]
         logger.info("First 5 values: %s", embedding[:5])
-        return response.json()['data'][0]['embedding']
+        return response.json()["data"][0]["embedding"]
     except requests.RequestException as e:
         print(f"Error fetching embedding: {e}")
         return None
+
 
 # Main execution
 if __name__ == "__main__":
