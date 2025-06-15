@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from datetime import datetime
 from typing import Any, List, Optional
 import logging
@@ -22,7 +23,7 @@ LM_MODEL = "google/gemma-3-12b"
 LM_API_KEY = "whatever"
 
 @dataclass
-class DataAndToolResponse:
+class ChatAndToolResponse:
     content: Optional[str]
     tool_calls: List[Any]
 
@@ -87,6 +88,6 @@ if __name__ == "__main__":
 
     client = LLMClient()
 
-    response = client.call_chat(messages=messages, tool_schema={})
+    response = client.call_chat(messages=messages, tool_schema=[])
 
     print(response)

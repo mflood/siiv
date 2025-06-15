@@ -66,7 +66,7 @@ class VectorClient():
 
     def list_ids(self, self, limit: int) -> List[str]:
         """List all object/document IDs in the collection."""
-        self._logger.info(f‘Listing %d document ids from chroma db collection’, limit)
+        self._logger.info(f'Listing %d document ids from chroma db collection', limit)
         try:   
             results = self._chroma_collection.get(limit=limit)
             ids = results['ids']
