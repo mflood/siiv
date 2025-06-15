@@ -1,8 +1,10 @@
 import subprocess
+import logging
 from typing import Any, Dict, List
 
 from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
 
+LOGGER_NAME = __name__
 
 class ExecuteCommandTool(ToolInterface):
 
@@ -10,6 +12,7 @@ class ExecuteCommandTool(ToolInterface):
         # Optional safety: restrict which commands can be executed
         self._pwd = pwd
         self._allowed_commands = allowed_commands or []
+        self._logger = logging.getLogger(LOGGER_NAME)
 
     def get_schema(self) -> Dict[str, Any]:
         return {
@@ -63,22 +66,37 @@ class ExecuteCommandTool(ToolInterface):
 
     def execute(self, **kwargs) -> ToolExecutionResult:
         command = kwargs["command"]
-        return self._execute(command)
+        requires_approval = kwargs["requires_approval"]
+        return self._execute(command=command, requires_approval=requires_approval)
 
-    def _execute(self, command: str) -> ToolExecutionResult:
-        args = {"command": command}
+    def _execute(self, command: str, requires_approval: bool) -> ToolExecutionResult:
 
-        # Optional: validate against allowed commands
+        args = {"command": command, "requires_approval": requires_approval}
+
+        self._logger.info("Tool Call: ExecuteCommandTool") 
+        for k, v in args.items():
+            self._logger.info("%s=%s", k, v)
+
+        # Force requires approval if the command is not in allow list
         if self._allowed_commands and not any(
             command.startswith(cmd) for cmd in self._allowed_commands
         ):
-            return ToolExecutionResult(
-                tool_name="execute_command",
-                args=args,
-                stdout="",
-                stderr=f"Command not allowed: {command}",
-                return_code=1,
-            )
+            requires_approval = True
+
+        if requires_approval:
+            print(f"{command}")
+            print("Approval required to execute this command.")
+            user_input = input("Do you approve this execution? (yes/no): ").strip().lower()
+            if user_input != 'yes':
+                self._logger.info("Execution aborted by user.")
+                return ToolExecutionResult(
+                    tool_name="execute_command",
+                    args=args,
+                    stdout="",
+                    stderr="Execution aborted by user. Command disallowed",
+                    return_code=0,
+                )
+
 
         try:
             result = subprocess.run(
@@ -105,10 +123,10 @@ class ExecuteCommandTool(ToolInterface):
 if __name__ == "__main__":
     tool = ExecuteCommandTool(
         pwd="/Users/matthew.flood/workspace/airflow-datawarehouse",
-        allowed_commands=["ls", "echo", "whoami", "pwd"],
+        allowed_commands=["echo", "whoami", "pwd", "find", "ping", "cat", "mkdir", "touch", "date", "python"],
     )
 
-    result = tool.execute("ls -la")
+    result = tool._execute("ls -la", requires_approval=False)
     content = result.to_llm_message()
     print(content)
 

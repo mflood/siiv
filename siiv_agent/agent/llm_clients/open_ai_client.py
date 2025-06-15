@@ -24,13 +24,21 @@ class OpenAiClient(LLMClientInterface):
 
     def call_chat(self, messages: List[dict], tool_schema=List[dict]):
         time.sleep(5)
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=messages,
-            temperature=self._temperature,
-            tools=tool_schema,
-            tool_choice="auto",
-        )
+
+        if tool_schema:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                temperature=self._temperature,
+                tools=tool_schema,
+                tool_choice="auto",
+            )
+        else:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                temperature=self._temperature,
+            )
 
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S") + f"_{now.microsecond // 1000:03d}"
@@ -53,5 +61,5 @@ if __name__ == "__main__":
     init_logging()
     messages = [{"role": "system", "content": "You are a cheerful and helpful agent. Provide answers as complete sentences and include fun emojis. Don't use a tool if you already know the answer. The only tool available is onnect_to_file. Do not use that tool unless instructed to."}, {"role": "user", "content": "What is the wisest thing anyone has ever said?"}]
     client = OpenAiClient()
-    response = client.call_chat(messages=messages, tool_schema={})
+    response = client.call_chat(messages=messages, tool_schema=[])
     print(response)
