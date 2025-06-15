@@ -1,11 +1,13 @@
 black
-demjson3
-flake8
 isort
 mypy
-openai
-pycodestyle
-pytest
-python-dotenv
-requests
 ruff
+pytest
+# Development and testing tools
+flake8
+pycodestyle
+# Additional libraries
+requests
+python-dotenv
+demjson3
+openai

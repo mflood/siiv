@@ -13,6 +13,7 @@ from agent.tools.replace_in_file_tool import ReplaceInFileTool
 from agent.tools.search_files_tool import SearchFilesTool
 from agent.tools.tool_interface import ToolExecutionResult, ToolInterface
 from agent.tools.write_to_file_tool import WriteToFileTool
+from agent.tools.propose_useful_agent_tool import ProposeUsefulAgentTool  # Import the new tool
 
 
 class TaskCompleteError(Exception):
@@ -73,9 +74,8 @@ class ToolManager:
                 ReplaceInFileTool(pwd=root_dir),
                 SearchFilesTool(root_path=root_dir),
                 WriteToFileTool(root_path=root_dir),
-                # FindFileTool(pwd=root_dir),
+                ProposeUsefulAgentTool(),  # Add the new tool here
                 ListCodeDefinitionNamesTool(pwd=root_dir),
-                # AskMerlinForInformationTool(pwd=root_dir),
                 FinishTaskTool(),
             ]
         )
@@ -89,3 +89,4 @@ if __name__ == "__main__":
     schema = manager.get_tools_schema_list()
     as_string = json.dumps(schema, indent=2)
     print(as_string)
+
