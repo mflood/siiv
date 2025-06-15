@@ -4,25 +4,48 @@ import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
-
 import base64
 from glob import glob
 
+
 def load_api_key():
+    """
+    Load the OpenAI API key from the .env file.
+    Raises ValueError if the key is not found.
+    """
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("OPENAI_API_KEY not found in .env file.")
     return api_key
 
+
 client = OpenAI(api_key=load_api_key())
 
 def encode_image(image_path):
+    """
+    Encode image to base64 format.
+
+    Args:
+        image_path (str): The file path to the image to encode.
+
+    Returns:
+        str: The base64 encoded string of the image.
+    """
     with open(image_path, "rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode("utf-8")
     return encoded
 
 def extract_code_from_image(image_path, model="gpt-4o"):
+    """
+    Extract Python code from an image using OpenAI's model.
+
+    Args:
+        image_path (str): The file path to the image containing Python code.
+    
+    Returns:
+        str: The extracted Python code.
+    """
     base64_image = encode_image(image_path)
 
     response = client.chat.completions.create(model=model,
@@ -49,11 +72,24 @@ def extract_code_from_image(image_path, model="gpt-4o"):
     return code
 
 def save_code_to_file(code, output_path):
+    """
+    Save the extracted code to a file.
+
+    Args:
+        code (str): The Python code to save.
+        output_path (str): The file path where the code should be saved.
+    """
     with open(output_path, "w") as f:
         f.write(code)
     print(f"✅ Saved to {output_path}")
 
 def process_folder(folder_path):
+    """
+    Process a folder of images and extract Python code from each.
+
+    Args:
+        folder_path (str): The path to the folder containing image files.
+    """
     image_files = sorted(glob(os.path.join(folder_path, "IMG_*.JPG")))
 
     if not image_files:
@@ -77,6 +113,10 @@ def process_folder(folder_path):
             print(f"❌ Error processing {filename}: {e}")
 
 def main():
+    """
+    Main entry point of the script.
+    Sets up argument parsing and initiates the processing of images.
+    """
     parser = argparse.ArgumentParser(description="Batch convert photos of Python code into text using OpenAI Vision.")
     parser.add_argument("--folder", default="photos", help="Folder containing image files (default: photos/)")
 
@@ -85,6 +125,6 @@ def main():
     load_api_key()
     process_folder(args.folder)
 
+
 if __name__ == "__main__":
     main()
-
