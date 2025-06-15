@@ -10,6 +10,8 @@ LOGGER_NAME = __name__
 def _should_ignore_file(file_path: str) -> bool:
     logger = logging.getLogger(LOGGER_NAME)
     ignore_list = [
+        "Index.noindex",
+        "DerivedData",
         ".vscode",
         ".ipynb_checkpoints",
         ".git",
@@ -118,7 +120,7 @@ class ListFilesTool(ToolInterface):
                 if not _should_ignore_file(path):
                     files.append(path)
 
-            self._logger.info(f"Found {num_candidates} files in {directory}")
+            self._logger.info(f"%d of %d files were valid in %s", len(files), num_candidates, path_object)
 
             return ToolExecutionResult(
                 tool_name="list_files",
