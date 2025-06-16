@@ -19,8 +19,8 @@ class ReplaceInFileTool(ToolInterface):
             "type": "function",
             "function": {
                 "name": "replace_in_file",
-                "description": "Replace sections of content in an existing file using SEARCH/REPLACE blocks "
-                "that define exact changes to specific parts of the file.",
+                "description": "Replace sections of content in an existing file using SEARCH/REPLACE blocks \
+                that define exact changes to specific parts of the file.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -31,32 +31,31 @@ class ReplaceInFileTool(ToolInterface):
                         "diff": {
                             "type": "string",
                             "description": """One or more SEARCH/REPLACE blocks following this exact format:
-
-------- SEARCH
-[exact content to find]
-=======
-[new content to replace with]
-+++++++ REPLACE
-
-Critical rules:
-1. SEARCH content must match the associated file section to find EXACTLY:
-    Match character-for-character, including whitespace, indentation, line endings
-    Include all constructs, not strings, etc.
-2. SEARCH/REPLACE blocks will only replace the first match occurrence.
-    Including multiple lines in each SEARCH section if that is what you need to change.
-    Including only single lines in SEARCH sections, unless the intent is not to change multiple lines.
-    When in doubt, use smaller SEARCH/REPLACE blocks, unless the intent is to change the entire section.
-3. Keep SEARCH/REPLACE blocks concise.
-    Break large SEARCH/REPLACE blocks into a series of smaller blocks that each change a small portion
-    of the file. If you have large SEARCH blocks, and a few surrounding lines that do not change,
-    consider including just those changing lines in SEARCH/REPLACE blocks.
-    Do not include long comments, or unchanging lines as they seem likely to change in future
-    and need to be updated. Never truncate lines only for matching purposes as this can cause
-    matching failures.
-4. To move code: Use two SEARCH/REPLACE blocks (one to delete from original & one to insert
-    at new location)
-5. To delete code: Use empty REPLACE section",
-""",
+-
+-------- SEARCH
+-[exact content to find]
+-=======
+-[new content to replace with]
+-+++++++ REPLACE
+-
+-Critical rules:
+-1. SEARCH content must match the associated file section to find EXACTLY:
+-    Match character-for-character, including whitespace, indentation, line endings
+-    Include all constructs, not strings, etc.
+-2. SEARCH/REPLACE blocks will only replace the first match occurrence.
+-    Including multiple lines in each SEARCH section if that is what you need to change.
+-    Including only single lines in SEARCH sections, unless the intent is not to change multiple lines.
+-    When in doubt, use smaller SEARCH/REPLACE blocks, unless the intent is to change the entire section.
+-3. Keep SEARCH/REPLACE blocks concise.
+-    Break large SEARCH/REPLACE blocks into a series of smaller blocks that each change a small portion
+-    of the file. If you have large SEARCH blocks, and a few surrounding lines that do not change,
+-    consider including just those changing lines in SEARCH/REPLACE blocks.
+-    Do not include long comments, or unchanging lines as they seem likely to change in future
+-    and need to be updated. Never truncate lines only for matching purposes as this can cause
+-    matching failures.
+-4. To move code: Use two SEARCH/REPLACE blocks (one to delete from original & one to insert
+-    at new location)
+-5. To delete code: Use empty REPLACE section""",
                         },
                     },
                     "required": ["file_path", "diff"],
@@ -66,7 +65,6 @@ Critical rules:
 
     def execute(self, **kwargs) -> ToolExecutionResult:
         return self._execute(file_path=kwargs["file_path"], diff=kwargs["diff"])
-
     def _execute(self, file_path: str, diff: str) -> ToolExecutionResult:
         args = {"file_path": file_path, "diff": diff}
 
@@ -97,7 +95,7 @@ Critical rules:
             content = path_object.read_text()
 
             pattern = re.compile(
-                r"-{7,} SEARCH\n(.*?)\n={7,}\n(.*?)\n\+{7,} REPLACE", re.DOTALL
+                r"-{7,} SEARCH\\n(.*?)\\n={7,}\\n(.*?)\\n\+{7,} REPLACE", re.DOTALL
             )
             changes = pattern.findall(diff)
             self._logger.info(
@@ -108,6 +106,7 @@ Critical rules:
             replacements = 0
             for search_text, replace_text in changes:
                 if search_text not in modified:
+                    self._logger.warning(f"SEARCH block not found: {search_text}")
                     return ToolExecutionResult(
                         "replace_in_file",
                         args,
@@ -117,6 +116,16 @@ Critical rules:
                     )
                 modified = modified.replace(search_text, replace_text, 1)
                 replacements += 1
+
+            if replacements == 0:
+                self._logger.info("No changes made to file.")
+                return ToolExecutionResult(
+                    tool_name="replace_in_file",
+                    args=args,
+                    stdout="No changes made.",
+                    stderr="",
+                    return_code=1,
+                )
 
             self._logger.info(f"Writing file {file_path}")
             path_object.write_text(modified)
@@ -149,7 +158,7 @@ if __name__ == "__main__":
 --------- SEARCH
 FROG
 =========
-VEGETABLES                                             
+VEGETABLES     
 +++++++++ REPLACE
 """,
     )
